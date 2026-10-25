@@ -1,1 +1,275 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>NEON REIGN</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b16;color:#f1f7ff;font-family:system-ui,-apple-system,sans-serif;touch-action:none}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;z-index:0}
+#hud{position:fixed;z-index:2;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:7px;pointer-events:none;flex-wrap:wrap}
+.stat{background:#091327dc;border:1px solid #34496f;border-radius:12px;padding:7px 10px;font-size:13px;font-weight:800;box-shadow:0 5px 20px #0005}
+#xpbar{position:fixed;z-index:2;top:62px;left:10px;right:10px;height:7px;border-radius:9px;background:#1b2945;overflow:hidden}
+#xpfill{height:100%;width:0;background:linear-gradient(90deg,#6cfff0,#65a7ff);box-shadow:0 0 12px #58f6ff}
+#bottom{position:fixed;z-index:3;bottom:12px;left:12px;right:12px;display:flex;align-items:end;justify-content:space-between;pointer-events:none}
+#help{font-size:12px;line-height:1.45;color:#d3def4;background:#091327c9;border:1px solid #2e4266;border-radius:12px;padding:8px 10px}
+#dash{pointer-events:auto;position:fixed;right:18px;bottom:18px;z-index:5;width:82px;height:82px;flex-shrink:0;border-radius:50%;border:2px solid #61f8ff;color:#fff;background:#163b67dd;font-weight:900;box-shadow:0 0 22px #43d9ff55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}#dash small{font-size:11px;font-weight:700}#dash.ready{background:linear-gradient(145deg,#146b78,#183b68);box-shadow:0 0 24px #43d9ff99}#soundToggle{pointer-events:auto;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:5;align-self:auto;border:1px solid #48658d;background:#091327ee;color:#fff;border-radius:12px;padding:9px 12px;font-weight:800;white-space:nowrap;box-shadow:0 2px 12px #0008}#bottom{gap:8px;flex-wrap:wrap}#bottom #help{max-width:calc(100% - 300px);padding-bottom:8px}#pauseGame{pointer-events:auto;position:fixed;left:12px;top:78px;z-index:10;border:1px solid #5277a8;background:#12223df2;color:#e5f2ff;border-radius:12px;padding:10px 12px;font-weight:900;white-space:nowrap;box-shadow:0 2px 12px #0008}
+.overlay{position:fixed;z-index:10;inset:0;background:#030611d9;display:flex;align-items:center;justify-content:center;padding:16px}
+.panel{width:min(490px,100%);max-height:90dvh;overflow:auto;background:linear-gradient(145deg,#142445,#080e20);border:1px solid #45618d;border-radius:23px;padding:22px;box-shadow:0 0 55px #1a4b8855;text-align:center}
+h1{font-size:clamp(30px,8vw,48px);line-height:1;margin:6px 0 12px;color:#71fff4;text-shadow:0 0 20px #2ab9d8;letter-spacing:1px}
+p{color:#c5d4ef;line-height:1.55}.main{border:0;border-radius:13px;background:linear-gradient(90deg,#64f6ef,#a0ffb4);color:#071321;font-size:17px;font-weight:950;padding:13px 24px;margin-top:10px;box-shadow:0 5px 0 #2c8c91}
+.cards{display:grid;grid-template-columns:1fr;gap:9px;margin-top:15px}.pick{border:1px solid #42638e;background:#102244;color:#f4f8ff;text-align:left;padding:12px;border-radius:13px;font-weight:850;font-size:15px}.pick small{display:block;color:#b8cae9;font-weight:500;margin-top:4px;line-height:1.35}
+.gachaGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.skin{border:1px solid #42638e;background:#102244;color:#f4f8ff;padding:10px 5px;border-radius:12px;font-weight:800}.skin small{display:block;color:#b8cae9;font-size:11px;margin-top:5px}.hidden{display:none!important}
+body.font-small{font-size:85%}body.font-medium{font-size:100%}body.font-large{font-size:125%}body.font-large .stat{font-size:17px}body.font-large #help{font-size:16px}body.font-large .pick{font-size:19px}body.font-large .pick small{font-size:15px}body.font-large .skin{font-size:17px}body.font-large .skin small{font-size:14px}body.font-small .stat{font-size:11px}body.font-small #help{font-size:10px}body.font-small .pick{font-size:13px}body.font-small .pick small{font-size:10px}#fontPreview{border:1px solid #45618d;border-radius:12px;padding:14px;background:#091327}#settings .cards{grid-template-columns:1fr}
+body{--ui-scale:1}body.font-small{--ui-scale:.88}body.font-medium{--ui-scale:1}body.font-large{--ui-scale:1.22}body.font-xlarge{--ui-scale:1.45}#hud .stat,#help,#soundToggle,#dash,#dash small,.pick,.skin,.main,.panel p,.panel h3,.panel button{font-size:calc(1em * var(--ui-scale))}#hud .stat{font-size:calc(13px * var(--ui-scale))}#help{font-size:calc(12px * var(--ui-scale))}#soundToggle{font-size:calc(14px * var(--ui-scale));padding:calc(9px * var(--ui-scale))}#dash{width:calc(82px * var(--ui-scale));height:calc(82px * var(--ui-scale))}#dash small{font-size:calc(11px * var(--ui-scale))}.panel{padding:calc(22px * var(--ui-scale))}.pick{font-size:calc(15px * var(--ui-scale))}.main{font-size:calc(17px * var(--ui-scale))} 
 
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud" class="hidden">
+ <div class="stat">⏱ <span id="timer">00:00</span></div>
+ <div class="stat">💠 <span id="score">0</span></div>
+ <div class="stat">❤️ <span id="hp">3</span>　⭐ Lv.<span id="lv">1</span></div>
+ <div class="stat">🌊 WAVE <span id="wave">1</span></div>
+</div><div id="xpbar" class="hidden"><div id="xpfill"></div></div>
+<div id="bottom" class="hidden"><div id="help">WASD / 矢印キーで移動<br>自動攻撃・SpaceでDASH・P/Escで停止</div><button id="soundToggle" aria-label="効果音切り替え">🔇 音OFF（タップでON）</button><button id="pauseGame">⏸ 一時停止</button><button id="dash">⚡ DASH<small id="dashStatus">READY!</small></button></div>
+<div id="title" class="overlay"><div class="panel"><div style="font-size:48px">🌌</div><h1 style="letter-spacing:3px;text-shadow:0 0 18px #57f7ff">NEON REIGN</h1><h3 style="margin-top:0;color:#ffdc73">SURVIVE • EVOLVE • CONQUER</h3><p>敵を倒して経験値を集めよう！<br>迫りくる敵を撃退し、強化を選んで生き延びろ！</p><p>🟢 経験値を集める　⚡ ダッシュで突破<br>🧲 強化で磁力・速度・回復などを獲得</p><p style="font-size:12px">PC：WASD / 矢印キーで移動・SpaceでDASH・P/Escで一時停止<br>スマホ：画面の空いている場所を押したままドラッグ</p><button class="main" id="start">ロビーへ ▶</button></div></div>
+<div id="lobby" class="overlay hidden"><div class="panel">
+ <div style="font-size:40px">🛰️</div><h1 style="font-size:38px">SURVIVOR LOBBY</h1>
+ <p class="sub">準備を整えてから出撃しよう。</p>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;text-align:left;margin-top:14px">
+  <div class="stat">🪙 永続コイン<br><span id="coins">0</span></div>
+  <div class="stat">🏆 ベスト記録<br><span id="bestLobby">0</span> pts</div>
+ </div>
+ <h3 style="text-align:left;margin-bottom:6px">出撃ボーナス</h3>
+ <div class="cards" id="loadouts">
+  <button class="pick" data-loadout="balanced">⚖️ バランス型 <small>標準状態で出撃</small></button>
+  <button class="pick" data-loadout="runner">👟 ランナー型 <small>移動速度 +18%、磁力が少し弱い</small></button>
+  <button class="pick" data-loadout="magnet">🧲 磁力型 <small>経験値の吸引範囲 +55</small></button>
+ </div>
+ <h3 style="text-align:left;margin-bottom:6px">ゲームモード</h3>
+ <div class="cards">
+  <button class="pick" id="normalMode">🌌 SURVIVAL <small>標準ルール・敵を倒して生き延びる</small></button>
+  <button class="pick" id="hardMode">🔥 CHAOS <small>敵は多め・スコア倍率 ×2</small></button>
+ </div>
+ <button class="main" id="launch">出撃開始 ▶</button>
+ <button class="pick" id="openGacha" style="text-align:center;margin-top:12px">🎰 見た目ガチャへ</button><button class="pick" id="openShop" style="text-align:center">🏪 コインショップ</button><button class="pick" id="openAch" style="text-align:center">🏆 実績を見る</button><button class="pick" id="openSettings" style="text-align:center">⚙️ 設定（文字サイズ）</button><button class="pick" id="openReset" style="text-align:center;border-color:#a64a62;color:#ffb6c4">🗑️ セーブデータをリセット</button>
+ <div><button id="backTitle" style="margin-top:14px;background:none;color:#b8c9e8;border:0;padding:8px">← タイトルへ戻る</button></div>
+ </div></div>
+<div id="gacha" class="overlay hidden"><div class="panel">
+ <div style="font-size:40px">🎰</div><h1 style="font-size:36px">COSMETIC GACHA</h1>
+ <p>能力は変わらない、見た目だけのガチャ！<br>🪙 所持コイン：<b id="gachaCoins">0</b></p>
+ <div class="gachaGrid"><button class="skin" id="pull1">1回引く<small>🪙 100コイン</small></button><button class="skin" id="pull5">5連ガチャ<small>🪙 450コイン</small></button><button class="skin" id="pull10">10連ガチャ<small>🪙 800コイン</small></button></div>
+ <p id="gachaMessage" style="font-size:13px;white-space:pre-line"></p><h3>🎨 所持スキン（選ぶと見た目変更）</h3><div class="cards" id="skinList"></div>
+ <button class="main" id="closeGacha">ロビーに戻る</button>
+ </div></div>
+<div id="shop" class="overlay hidden"><div class="panel"><div style="font-size:40px">🏪</div><h1 style="font-size:36px">COIN SHOP</h1><p>所持コイン：<b id="shopCoins">0</b><br>見た目だけのスキンを直接購入できるよ！</p><div class="cards" id="shopList"></div><button class="main" id="closeShop">ロビーに戻る</button></div></div>
+<div id="achievements" class="overlay hidden"><div class="panel"><div style="font-size:40px">🏆</div><h1 style="font-size:36px">ACHIEVEMENTS</h1><p id="achList" style="text-align:left;white-space:pre-line"></p><button class="main" id="closeAch">ロビーに戻る</button></div></div>
+
+<div id="settings" class="overlay hidden"><div class="panel"><div style="font-size:40px">⚙️</div><h1 style="font-size:36px">設定</h1><h3>文字の大きさ</h3><p>見やすい大きさを選んでね。</p><div class="cards"><button class="pick" id="fontSmall">小　Small</button><button class="pick" id="fontMedium">中　Medium（標準）</button><button class="pick" id="fontLarge">大　Large</button></div><p id="fontPreview">文字サイズの見本：敵を倒して生き延びよう！</p><button class="main" id="closeSettings">設定を保存して戻る</button></div></div>
+<div id="resetConfirm" class="overlay hidden"><div class="panel"><div style="font-size:42px">⚠️</div><h1 style="font-size:30px">データリセット</h1><p id="resetPrompt">本当にリセットしますか？</p><p style="color:#ff9eac;font-size:13px">コイン・スキン・実績・ベスト記録が消えます。この操作は元に戻せません。</p><button class="pick" id="resetNext">次へ：リセット内容を確認</button><button class="main" id="resetFinal" style="background:linear-gradient(135deg,#9d2947,#591b38);display:none">本当にリセットする</button><button class="pick" id="resetCancel">キャンセルして戻る</button></div></div>
+<div id="pauseOverlay" class="overlay hidden"><div class="panel"><div style="font-size:42px">⏸️</div><h1 style="font-size:34px">一時停止</h1><p>ひと休みしよう！ゲームは止まっているよ。</p><section style="text-align:left;background:#0a1427;border:1px solid #355071;border-radius:14px;padding:12px;margin:12px 0"><h3 style="margin:0 0 8px">⚔️ プレイ中の武器</h3><div id="pauseWeaponList" style="display:grid;gap:7px"></div></section><button class="main" id="resumeGame">▶ ゲームに戻る</button><button class="pick" id="pauseLeave">🚪 ステージを離脱する</button><p style="font-size:12px">PC：P または Esc でも再開できるよ。</p></div></div>
+<div id="leaveConfirm" class="overlay hidden"><div class="panel"><div style="font-size:42px">🚪</div><h1 style="font-size:30px">ステージ離脱</h1><p>今のステージを離脱しますか？<br>ここまでのスコアと生存報酬は記録されます。</p><button class="main" id="confirmLeave" style="background:linear-gradient(90deg,#ff9aa9,#ffd1a8)">離脱してロビーへ</button><button class="pick" id="cancelLeave">ゲームに戻る</button></div></div>
+<div id="upgrade" class="overlay hidden"><div class="panel"><h1 style="font-size:35px">LEVEL UP!</h1><p>生き残るための強化を選べ！</p><div class="cards" id="choices"></div></div></div>
+<div id="over" class="overlay hidden"><div class="panel"><div style="font-size:45px">🕯️</div><h1>RUN OVER</h1><p id="result"></p><button class="main" id="again">もう一度挑戦 ↻</button></div></div>
+<script>
+(()=>{
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let W,H,D=1;
+let soundOn=false,audioCtx=null,lastShotSfx=0;async function unlockAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;audioCtx=audioCtx||new AC();if(audioCtx.state==='suspended')await audioCtx.resume();return audioCtx.state==='running'}catch(e){return false}}function tone(freq=440,duration=.07,type='sine',volume=.07,slide=0){if(!soundOn)return;try{if(!audioCtx)return; if(audioCtx.state!=='running')return;let o=audioCtx.createOscillator(),g=audioCtx.createGain(),now=audioCtx.currentTime;o.type=type;o.frequency.setValueAtTime(freq,now);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,freq+slide),now+duration);g.gain.setValueAtTime(Math.min(.38,volume*4.0),now);g.gain.exponentialRampToValueAtTime(.001,now+duration);o.connect(g);g.connect(audioCtx.destination);o.start(now);o.stop(now+duration)}catch(e){}}
+function sfx(name){if(!soundOn)return;if(name==='dash'){tone(260,.12,'sawtooth',.11,650);tone(720,.09,'triangle',.075,220)}else if(name==='shot'){tone(640,.035,'square',.025,-180)}else if(name==='hit'){tone(210,.055,'triangle',.055,-80)}else if(name==='kill'){tone(520,.07,'sine',.045,250)}else if(name==='level'){tone(480,.12,'triangle',.085,240);setTimeout(()=>tone(720,.16,'triangle',.075,260),70)}else if(name==='boss'){tone(110,.35,'sawtooth',.10,-45);tone(165,.28,'square',.065,-50)}else if(name==='coin'){tone(850,.08,'sine',.06,350)}}
+function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
+const $=id=>document.getElementById(id);
+let fontSizeChoice='medium';try{fontSizeChoice=localStorage.getItem('llFontSize')||'medium'}catch(e){}
+function applyFontSize(size){fontSizeChoice=size;document.body.classList.remove('font-small','font-medium','font-large');document.body.classList.add('font-'+size);try{localStorage.setItem('llFontSize',size)}catch(e){};['Small','Medium','Large'].forEach(n=>{let b=$('font'+n);if(b)b.style.borderColor=(n.toLowerCase()===size)?'#71fff4':'#42638e';});}
+applyFontSize(fontSizeChoice);
+$('openSettings').onclick=()=>{$('lobby').classList.add('hidden');$('settings').classList.remove('hidden')};
+$('closeSettings').onclick=()=>{$('settings').classList.add('hidden');$('lobby').classList.remove('hidden')};
+$('fontSmall').onclick=()=>applyFontSize('small');$('fontMedium').onclick=()=>applyFontSize('medium');$('fontLarge').onclick=()=>applyFontSize('large');
+
+$('soundToggle').onclick=async()=>{if(!soundOn){const ok=await unlockAudio();soundOn=ok;$('soundToggle').textContent=soundOn?'🔊 音ON':'⚠️ 音声非対応';if(soundOn){tone(880,.12,'sine',.10,180);setTimeout(()=>tone(1175,.14,'triangle',.085,100),100)}}else{soundOn=false;$('soundToggle').textContent='🔇 音OFF（タップでON）'}};document.addEventListener('pointerdown',()=>{if(soundOn&&audioCtx&&audioCtx.state==='suspended')unlockAudio()},{passive:true});
+let mode='title',leaveRequested=false,p,foes,gems,fx,shots=[],keys={},touch=null,touchStart=null,touchNow=null,t=0,score=0,xp=0,need=5,lv=1,wave=1,spawn=0,gemSpawn=0,last=0,best=0,boss=null,bossSpawned=false,nextBossAt=60,bossCount=0,kills=0,evolutions=[],stage=0;
+try{best=+(localStorage.lastLightBest||0)}catch(e){}
+const upgrades=[
+ {icon:'👟',name:'軽量ブーツ',desc:'移動速度 +28%',apply:()=>p.speed*=1.28},
+ {icon:'🧲',name:'磁力フィールド',desc:'経験値を吸い寄せる範囲 +90%',apply:()=>p.magnet+=90},
+  {icon:'💚',name:'応急キット',desc:'HPを2回復（最大HPまで）',apply:()=>p.hp=Math.min(p.maxhp,p.hp+2)},
+ {icon:'🛡️',name:'エネルギーシールド',desc:'最大HP +2、HPも2回復',apply:()=>{p.maxhp+=2;p.hp=Math.min(p.maxhp,p.hp+2)}},
+ {icon:'⚡',name:'クイックチャージ',desc:'ダッシュ再使用時間 -35%',apply:()=>p.dashCD=Math.max(.65,p.dashCD*.65)},
+ {icon:'💠',name:'回収ボーナス',desc:'経験値オーブの獲得量 +2',apply:()=>p.gemValue+=2},
+ {icon:'🌀',name:'残像ステップ',desc:'ダッシュ中の無敵時間 +0.4秒',apply:()=>p.dashInv+=.4},
+ {icon:'🍀',name:'幸運の波動',desc:'経験値オーブの出現率が大幅アップ',apply:()=>p.luck=Math.min(.9,p.luck+.25)},
+ {icon:'🔫',name:'強化弾',desc:'攻撃ダメージ +2（3回で進化条件）',apply:()=>{p.damage+=1.5;p.damageUp=(p.damageUp||0)+1;checkEvolution()}},
+ {icon:'⚙️',name:'高速連射',desc:'攻撃間隔 -30%（3回で進化条件）',apply:()=>{p.fireRate=Math.max(.16,p.fireRate*.82);p.rateUp=(p.rateUp||0)+1;checkEvolution()}},
+ {icon:'🎯',name:'照準補助',desc:'自動攻撃の射程 +35%',apply:()=>p.range*=1.35},
+ {icon:'➕',name:'追加弾',desc:'一度に撃つ弾が1発増える（最大6発）',apply:()=>p.multishot=Math.min(6,p.multishot+1)},
+ {icon:'🪃',name:'ブーメラン',desc:'前方へ飛び、戻りながら敵を攻撃する',apply:()=>unlockWeapon('boomerang')},
+ {icon:'🤖',name:'ドローン',desc:'近くの敵へ自動射撃するドローンを獲得',apply:()=>unlockWeapon('drone')},
+ {icon:'⚡',name:'チェーンライトニング',desc:'敵から敵へ連鎖する電撃を放つ',apply:()=>unlockWeapon('lightning')},
+ {icon:'🔥',name:'火炎オーラ',desc:'近くの敵を継続的に焼く炎の輪を獲得',apply:()=>unlockWeapon('flame')},
+ {icon:'🌀',name:'旋風刃',desc:'自分の周りを回転し、近づく敵を切り裂く',apply:()=>unlockWeapon('blades')},
+ {icon:'💣',name:'ミサイルポッド',desc:'一定時間ごとに敵へ爆発ミサイルを発射',apply:()=>unlockWeapon('missile')},
+ {icon:'📡',name:'武器強化パーツ',desc:'所持している特殊武器を強化。Lv.5で専用進化！',apply:()=>upgradeWeapon()}
+];
+const weaponNames={boomerang:'ブーメラン',drone:'ドローン',lightning:'チェーンライトニング',flame:'火炎オーラ',blades:'旋風刃',missile:'ミサイルポッド'};
+const evolvedNames={boomerang:'双生ブーメラン',drone:'守護ドローン',lightning:'雷神の鎖',flame:'地獄の炎',blades:'旋風嵐',missile:'核ミサイル'};
+function evolveWeapon(id){if(p.evolvedWeapons[id])return;p.evolvedWeapons[id]=true;p.weapons[id]=6;evolutions.push(id);$('help').innerHTML='🌟 武器進化！ '+evolvedNames[id]+' が誕生！';sfx('level');particles(p.x,p.y,'#d9a2ff',48)}
+function unlockWeapon(id){if(!p.weapons[id]){p.weapons[id]=1;$('help').innerHTML='🆕 新武器獲得！ '+weaponNames[id];particles(p.x,p.y,'#ffe66d',28)}else if(p.weapons[id]<6){p.weapons[id]=Math.min(5,p.weapons[id]+1);$('help').innerHTML='⬆️ '+weaponNames[id]+' Lv.'+p.weapons[id]+'！';particles(p.x,p.y,'#65fff5',20)}if(p.weapons[id]>=5)evolveWeapon(id)}
+function upgradeWeapon(){let ids=Object.keys(p.weapons).filter(id=>p.weapons[id]<6);if(!ids.length){unlockWeapon(['boomerang','drone','lightning','flame','blades','missile'][Math.floor(Math.random()*6)]);return}let id=ids[Math.floor(Math.random()*ids.length)];unlockWeapon(id)}
+function checkEvolution(){if((p.damageUp||0)>=3&&!evolutions.includes('plasma')){evolutions.push('plasma');p.damage+=2;p.fireRate=Math.max(.16,p.fireRate*.78);$('help').innerHTML='🌟 武器進化：プラズマランチャー！攻撃力と連射が大幅アップ';particles(p.x,p.y,'#c78bff',40)}if((p.rateUp||0)>=3&&!evolutions.includes('storm')){evolutions.push('storm');p.multishot=Math.min(5,p.multishot+1);p.fireRate=Math.max(.16,p.fireRate*.78);$('help').innerHTML='🌟 武器進化：ストームショット！追加弾＋高速連射';particles(p.x,p.y,'#65fff5',40)}}
+function reset(){stage=Math.floor(Math.random()*3);boss=null;bossSpawned=false;nextBossAt=60;bossCount=0;kills=0;evolutions=[];p={x:W/2,y:H/2,r:12,hp:3,maxhp:3,speed:210,magnet:90,dashCD:3.2,dashReady:0,dashTime:0,inv:0,dashInv:.25,gemValue:1,luck:0,damage:1,fireRate:.72,fireTimer:.25,range:300,multishot:1,weapons:{},weaponTimers:{},weaponHits:{},boomerangs:[],evolvedWeapons:{}};if(loadout==='runner'){p.speed*=1.18;p.magnet*=.82}else if(loadout==='magnet'){p.magnet+=55}foes=[];gems=[];fx=[];shots=[];t=0;score=0;xp=0;need=5;lv=1;wave=1;spawn=.7;gemSpawn=.1;updateHUD()}
+function updateHUD(){if(p){let ready=p.dashReady<=0;$('dashStatus').textContent=ready?'READY!':p.dashReady.toFixed(1)+'s';$('dash').classList.toggle('ready',ready);$('dash').style.opacity=ready?'1':'.72';$('dash').style.background=ready?'linear-gradient(145deg,#146b78,#183b68)':'#18243bdd';}$('timer').textContent=`${String(Math.floor(t/60)).padStart(2,'0')}:${String(Math.floor(t%60)).padStart(2,'0')}`;$('score').textContent=score;$('hp').textContent=p.hp;$('lv').textContent=lv;$('wave').textContent=wave+(boss?' 👹':'');$('xpfill').style.width=(xp/need*100)+'%'}
+function begin(){reset();leaveRequested=false;mode='play';$('title').classList.add('hidden');$('lobby').classList.add('hidden');$('over').classList.add('hidden');$('leaveConfirm').classList.add('hidden');$('pauseOverlay').classList.add('hidden');$('upgrade').classList.add('hidden');$('hud').classList.remove('hidden');$('xpbar').classList.remove('hidden');$('bottom').classList.remove('hidden');last=performance.now();requestAnimationFrame(loop)}
+let lobbyCoins=0, loadout='balanced', chaos=false;
+const skins=[
+ {id:'default',name:'スターター',icon:'🔹',color:'#58fff4',shape:'diamond',rarity:'N'},
+ {id:'rose',name:'ローズ',icon:'💗',color:'#ff5ca8',shape:'diamond',rarity:'R'},
+ {id:'sun',name:'サンシャイン',icon:'☀️',color:'#ffd45c',shape:'circle',rarity:'R'},
+ {id:'lime',name:'ライム',icon:'🍀',color:'#9bff6b',shape:'diamond',rarity:'R'},
+ {id:'violet',name:'ネオンバイオレット',icon:'🔮',color:'#b58aff',shape:'hex',rarity:'SR'},
+ {id:'ice',name:'アイスブルー',icon:'❄️',color:'#8ceaff',shape:'hex',rarity:'SR'},
+ {id:'flame',name:'フレイム',icon:'🔥',color:'#ff794b',shape:'star',rarity:'SSR'},
+ {id:'void',name:'ギャラクシー',icon:'🌌',color:'#e18bff',shape:'star',rarity:'SSR'},
+ {id:'ocean',name:'オーシャン',icon:'🌊',color:'#3b9dff',shape:'circle',rarity:'R'},
+ {id:'mint',name:'ミント',icon:'🍃',color:'#64ffd0',shape:'hex',rarity:'R'},
+ {id:'ember',name:'エンバー',icon:'🔥',color:'#ff653d',shape:'star',rarity:'SR'},
+ {id:'lemon',name:'レモンポップ',icon:'🍋',color:'#f6ff68',shape:'circle',rarity:'N'},
+ {id:'shadow',name:'シャドウ',icon:'🌑',color:'#a1a6c9',shape:'diamond',rarity:'SR'},
+ {id:'plasma',name:'プラズマ',icon:'💠',color:'#6b82ff',shape:'hex',rarity:'SR'},
+ {id:'candy',name:'キャンディ',icon:'🍬',color:'#ff9bd5',shape:'star',rarity:'R'},
+ {id:'toxic',name:'トキシック',icon:'☣️',color:'#b8ff38',shape:'hex',rarity:'SSR'},
+ {id:'gold',name:'ゴールド',icon:'👑',color:'#ffcf55',shape:'star',rarity:'SSR'},
+ {id:'ruby',name:'ルビー',icon:'♦️',color:'#ff365c',shape:'diamond',rarity:'SR'},
+ {id:'comet',name:'コメット',icon:'☄️',color:'#ffad65',shape:'triangle',rarity:'SSR'},
+ {id:'ghost',name:'ゴースト',icon:'👻',color:'#d9f5ff',shape:'circle',rarity:'SR'},
+ {id:'cyber',name:'サイバー',icon:'🤖',color:'#53ffe9',shape:'hex',rarity:'SSR'}
+];
+let ownedSkins=['default'],equippedSkin='default';
+let achievements={firstKill:false,kills50:false,survive60:false,survive180:false,boss:false,level10:false};
+try{lobbyCoins=+(localStorage.lastLightCoins||0);ownedSkins=JSON.parse(localStorage.lastLightSkins||'["default"]');equippedSkin=localStorage.lastLightEquipped||'default';if(!ownedSkins.includes('default'))ownedSkins.unshift('default')}catch(e){}
+function saveCosmetics(){try{localStorage.lastLightCoins=lobbyCoins;localStorage.lastLightSkins=JSON.stringify(ownedSkins);localStorage.lastLightEquipped=equippedSkin;localStorage.lastLightAchievements=JSON.stringify(achievements)}catch(e){};try{if(window.NRCloudSave)window.NRCloudSave(getCloudProfile())}catch(e){}}
+function getCloudProfile(){return {coins:lobbyCoins,skins:ownedSkins,equippedSkin,achievements,best:Number(best||0),updatedAt:Date.now()}}
+window.NRGetCloudProfile=getCloudProfile;
+window.NRApplyCloudSave=function(data){if(!data||typeof data!=='object')return;try{if(Number.isFinite(Number(data.coins)))lobbyCoins=Math.max(0,Number(data.coins));if(Array.isArray(data.skins))ownedSkins=[...new Set(['default',...data.skins.filter(x=>typeof x==='string')])];if(typeof data.equippedSkin==='string'&&ownedSkins.includes(data.equippedSkin))equippedSkin=data.equippedSkin;if(data.achievements&&typeof data.achievements==='object')achievements={...achievements,...data.achievements};if(Number.isFinite(Number(data.best)))best=Math.max(0,Number(data.best));localStorage.lastLightCoins=lobbyCoins;localStorage.lastLightSkins=JSON.stringify(ownedSkins);localStorage.lastLightEquipped=equippedSkin;localStorage.lastLightAchievements=JSON.stringify(achievements);localStorage.lastLightBest=best;$('coins').textContent=lobbyCoins;$('shopCoins').textContent=lobbyCoins;$('gachaCoins').textContent=lobbyCoins;$('bestLobby').textContent=best;renderAchievements();renderSkins();}catch(e){console.warn('Cloud save apply failed',e)}};
+try{achievements={...achievements,...JSON.parse(localStorage.lastLightAchievements||'{}')}}catch(e){}
+function checkAchievements(){let defs=[['firstKill','初討伐','敵を1体倒す',15,kills>=1],['kills50','討伐マスター','敵を50体倒す',50,kills>=50],['survive60','1分生存','60秒生き残る',25,t>=60],['survive180','サバイバー','180秒生き残る',75,t>=180],['boss','ボスハンター','ボスを倒す',100,achievements.boss],['level10','成長の証','レベル10に到達',50,lv>=10]];let changed=false;for(let [id,name,desc,reward,condition] of defs){if(condition&&!achievements[id]){achievements[id]=true;lobbyCoins+=reward;changed=true;fx.push({x:p?p.x:W/2,y:p?p.y:H/2,vx:0,vy:0,life:1,color:'#ffe66d',r:8});}}if(changed){saveCosmetics();$('coins').textContent=lobbyCoins}}
+function renderShop(){let box=$('shopList');box.innerHTML='';skins.filter(sk=>!ownedSkins.includes(sk.id)).forEach(sk=>{let cost=sk.rarity==='SSR'?1200:sk.rarity==='SR'?650:sk.rarity==='R'?300:100;let b=document.createElement('button');b.className='pick';b.innerHTML=`${sk.icon} ${sk.name}［${sk.rarity}］<small>🪙 ${cost}コインで購入</small>`;b.onclick=()=>{if(lobbyCoins<cost){b.querySelector('small').textContent='コインが足りない！';return}lobbyCoins-=cost;ownedSkins.push(sk.id);saveCosmetics();renderShop();$('shopCoins').textContent=lobbyCoins;$('coins').textContent=lobbyCoins};box.appendChild(b)});if(!box.children.length)box.innerHTML='<p>全部のスキンを所持しているよ！🎉</p>';$('shopCoins').textContent=lobbyCoins}
+function renderAchievements(){$('achList').textContent=[['firstKill','初討伐','敵を1体倒す'],['kills50','討伐マスター','敵を50体倒す'],['survive60','1分生存','60秒生き残る'],['survive180','サバイバー','180秒生き残る'],['boss','ボスハンター','ボスを倒す'],['level10','成長の証','レベル10に到達']].map(([id,n,d])=>`${achievements[id]?'✅':'🔒'} ${n} — ${d}${achievements[id]?'（達成済み）':''}`).join('\n')} 
+function skinById(id){return skins.find(s=>s.id===id)||skins[0]}
+function renderSkins(){let list=$('skinList');list.innerHTML='';ownedSkins.forEach(id=>{let sk=skinById(id),b=document.createElement('button');b.className='pick';b.style.borderColor=id===equippedSkin?sk.color:'#42638e';b.innerHTML=`${sk.icon} ${sk.name} <small>${sk.rarity}　${id===equippedSkin?'装備中':'タップして装備'}</small>`;b.onclick=()=>{equippedSkin=id;saveCosmetics();renderSkins();draw()};list.appendChild(b)});$('gachaCoins').textContent=lobbyCoins;$('coins').textContent=lobbyCoins}
+function pullGacha(count){let cost=count===1?100:count===5?450:800;if(lobbyCoins<cost){$('gachaMessage').textContent=`コインが足りない！あと${cost-lobbyCoins}枚必要だよ。`;return}lobbyCoins-=cost;let results=[];for(let i=0;i<count;i++){let r=Math.random(),pool=r<.03?skins.filter(x=>x.rarity==='SSR'):r<.16?skins.filter(x=>x.rarity==='SR'):r<.52?skins.filter(x=>x.rarity==='R'):skins.filter(x=>x.rarity==='N');if(!pool.length)pool=skins;let sk=pool[Math.floor(Math.random()*pool.length)],duplicate=ownedSkins.includes(sk.id);if(!duplicate)ownedSkins.push(sk.id);else lobbyCoins+=3;results.push(`${sk.icon} ${sk.name}［${sk.rarity}］${duplicate?'（かぶり：+3コイン）':''}`)}saveCosmetics();renderSkins();$('gachaMessage').textContent=results.join('\n');}
+
+function showLobby(){
+ $('title').classList.add('hidden');$('gacha').classList.add('hidden');$('settings').classList.add('hidden');$('lobby').classList.remove('hidden');
+ $('coins').textContent=lobbyCoins;$('bestLobby').textContent=best;
+}
+$('start').onclick=showLobby;
+$('openGacha').onclick=()=>{$('lobby').classList.add('hidden');$('gacha').classList.remove('hidden');$('gachaMessage').textContent='';renderSkins()};
+$('openSettings').onclick=()=>{$('lobby').classList.add('hidden');$('settings').classList.remove('hidden')};$('closeSettings').onclick=()=>{$('settings').classList.add('hidden');showLobby()};
+let resetStage=0;function openReset(){resetStage=0;$('resetPrompt').textContent='本当にリセットしますか？';$('resetNext').style.display='block';$('resetFinal').style.display='none';$('lobby').classList.add('hidden');$('resetConfirm').classList.remove('hidden')}$('openReset').onclick=openReset;$('resetNext').onclick=()=>{resetStage=1;$('resetPrompt').textContent='最終確認：コイン・所持スキン・装備スキン・実績・ベスト記録をすべて初期化します。よろしいですか？';$('resetNext').style.display='none';$('resetFinal').style.display='block'};$('resetCancel').onclick=()=>{$('resetConfirm').classList.add('hidden');showLobby()};$('resetFinal').onclick=()=>{for(const k of ['lastLightCoins','lastLightSkins','lastLightEquipped','lastLightAchievements','lastLightBest']){try{localStorage.removeItem(k)}catch(e){}}lobbyCoins=0;ownedSkins=['default'];equippedSkin='default';achievements={firstKill:false,kills50:false,survive60:false,survive180:false,boss:false,level10:false};best=0;saveCosmetics();$('resetConfirm').classList.add('hidden');showLobby();renderSkins();$('bestLobby').textContent='0';$('coins').textContent='0';$('gachaMessage').textContent='';};
+$('openShop').onclick=()=>{$('lobby').classList.add('hidden');$('shop').classList.remove('hidden');renderShop()};$('closeShop').onclick=()=>{$('shop').classList.add('hidden');showLobby()};$('openAch').onclick=()=>{$('lobby').classList.add('hidden');$('achievements').classList.remove('hidden');renderAchievements()};$('closeAch').onclick=()=>{$('achievements').classList.add('hidden');showLobby()};
+$('closeGacha').onclick=()=>{$('gacha').classList.add('hidden');showLobby()};
+$('pull1').onclick=()=>pullGacha(1);$('pull5').onclick=()=>pullGacha(5);$('pull10').onclick=()=>pullGacha(10);
+$('backTitle').onclick=()=>{$('lobby').classList.add('hidden');$('title').classList.remove('hidden')};
+document.querySelectorAll('[data-loadout]').forEach(b=>b.onclick=()=>{
+ loadout=b.dataset.loadout;document.querySelectorAll('[data-loadout]').forEach(x=>x.style.borderColor=x===b?'#67fff2':'#42638e');
+});
+  $('normalMode').onclick=()=>{chaos=false;$('normalMode').style.borderColor='#67fff2';$('hardMode').style.borderColor='#42638e'};
+$('hardMode').onclick=()=>{chaos=true;$('hardMode').style.borderColor='#ff7b9d';$('normalMode').style.borderColor='#42638e'};
+$('launch').onclick=()=>{$('lobby').classList.add('hidden');begin()};
+$('again').onclick=()=>{showLobby();$('over').classList.add('hidden')};
+function renderPauseWeapons(){const list=$('pauseWeaponList');if(!list)return;const ids=Object.keys(p.weapons||{}).filter(id=>p.weapons[id]>0);if(!ids.length){list.innerHTML='<p style="margin:0;color:#b7c7df">まだ特殊武器を持っていないよ。レベルアップで武器を獲得しよう！</p>';return}list.innerHTML=ids.map(id=>{const evolved=!!(p.evolvedWeapons&&p.evolvedWeapons[id]);const name=evolved?(evolvedNames[id]||weaponNames[id]||id):(weaponNames[id]||id);const level=p.weapons[id];return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:9px;background:#14243b"><span>'+((evolved?'🌟 ':'⚔️ ')+name+(evolved?'（進化済み）':''))+'</span><b style="white-space:nowrap;color:'+(evolved?'#e9a8ff':'#83f7ed')+'">Lv.'+level+'</b></div>'}).join('')}
+function pauseGame(){if(mode==='play'){renderPauseWeapons();mode='paused';$('pauseOverlay').classList.remove('hidden')}else if(mode==='paused'){mode='play';$('pauseOverlay').classList.add('hidden');last=performance.now();requestAnimationFrame(loop)}}$('pauseGame').onclick=pauseGame;$('resumeGame').onclick=()=>{if(mode==='paused')pauseGame()};$('pauseLeave').onclick=()=>{if(mode==='paused'){$('pauseOverlay').classList.add('hidden');$('leaveConfirm').classList.remove('hidden');mode='leaveConfirm'}};
+$('cancelLeave').onclick=()=>{$('leaveConfirm').classList.add('hidden');mode='play';last=performance.now();requestAnimationFrame(loop)};
+$('confirmLeave').onclick=()=>{$('leaveConfirm').classList.add('hidden');leaveRequested=true;end()};
+function rand(a,b){return a+Math.random()*(b-a)}
+function spawnEnemy(){if(foes.length>=(chaos?150:110))return;let s=Math.floor(Math.random()*4),x,y;if(s===0){x=rand(0,W);y=-22}else if(s===1){x=W+22;y=rand(0,H)}else if(s===2){x=rand(0,W);y=H+22}else{x=-22;y=rand(0,H)}let r=Math.random(),kind=r<Math.min(.12+t*.001,.28)?'fast':r<.30?'tank':r<.45?'splitter':r<.60?'zigzag':r<.73?'brute':r<.85?'runner':'normal';let stats={normal:[12,43,3],fast:[8,92,2],tank:[19,31,9],splitter:[14,38,5],zigzag:[11,54,4],brute:[23,24,16],runner:[9,112,2]};let [rad,base,hp]=stats[kind];let ramp=1+Math.max(0,t-20)/65;hp=Math.ceil(hp*Math.min(6.0,ramp)*(chaos?1.22:1));foes.push({x,y,r:rad,speed:base+Math.min(t*.17,48)+(chaos?8:0),kind,phase:rand(0,7),hp,maxhp:hp,contactDamage:t>240?2:1})}
+function spawnGem(){let a=rand(0,Math.PI*2),d=rand(90,Math.min(W,H)*.62);gems.push({x:Math.max(12,Math.min(W-12,p.x+Math.cos(a)*d)),y:Math.max(75,Math.min(H-12,p.y+Math.sin(a)*d)),r:6,phase:rand(0,6)})}
+function particles(x,y,color,n=9){for(let i=0;i<n;i++){let a=rand(0,6.28),v=rand(35,170);fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(.2,.6),color,r:rand(2,4)})}}
+function dash(){if(mode!=='play'||p.dashReady>0){if(mode==='play')tone(150,.045,'square',.012,-30);return;}let dx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0),dy=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0);if(touch){dx=touch.x;dy=touch.y}let l=Math.hypot(dx,dy)||1;if(!dx&&!dy)dx=1;p.x+=dx/l*105;p.y+=dy/l*105;p.dashReady=p.dashCD;p.inv=p.dashInv+.15;sfx('dash');particles(p.x,p.y,'#62fff2',22);p.x=Math.max(p.r,Math.min(W-p.r,p.x));p.y=Math.max(70,Math.min(H-p.r,p.y))}
+let dashTriggeredAt=0;
+function triggerDashNow(e){if(e){e.preventDefault();e.stopPropagation();}dashTriggeredAt=Date.now();dash();}
+$('dash').addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.pointerType==='mouse'||e.pointerType==='pen')triggerDashNow(e);},{passive:false});
+$('dash').addEventListener('touchstart',e=>{triggerDashNow(e);},{passive:false});
+$('dash').addEventListener('click',e=>{e.preventDefault();if(Date.now()-dashTriggeredAt>450)dash();},{passive:false});addEventListener('keydown',e=>{keys[e.key]=true;keys[e.key.toLowerCase()]=true;if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();if(e.key===' '||e.key==='Shift')dash();if((e.key==='Escape'||e.key.toLowerCase()==='p')&&['play','paused'].includes(mode)){e.preventDefault();pauseGame()}});addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});addEventListener('blur',()=>{keys={};touch=null;touchStart=null;touchNow=null});document.addEventListener('visibilitychange',()=>{if(document.hidden){keys={};touch=null;touchStart=null;touchNow=null}});
+// Drag movement: use native Touch Events on phones and Pointer Events for mouse/pen.
+let activePointer=null;
+function startDrag(x,y,id){
+  if(mode!=='play'||activePointer!==null)return;
+  activePointer=id;touchStart={x,y};touchNow={x,y};touch={x:0,y:0,id};
+}
+function moveDrag(x,y,id){
+  if(!touch||activePointer!==id)return;
+  touchNow={x,y};
+  const dx=x-touchStart.x,dy=y-touchStart.y,l=Math.hypot(dx,dy);
+  if(l<5){touch.x=0;touch.y=0;return;}
+  const strength=Math.min(1,l/30);touch.x=dx/l*strength;touch.y=dy/l*strength;
+}
+function stopDrag(id){if(activePointer===id){activePointer=null;touch=null;touchStart=null;touchNow=null;}}
+function isControl(e){return !!(e.target&&e.target.closest&&(e.target.closest('button')||e.target.closest('.panel')));}
+// On touch-capable devices, do not let touch PointerEvents claim the drag; Android WebViews
+// sometimes omit subsequent pointermove events. The Touch Events below own finger movement.
+document.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch')return;
+  if(isControl(e)||mode!=='play')return;
+  e.preventDefault();startDrag(e.clientX,e.clientY,e.pointerId);
+},{passive:false});
+document.addEventListener('pointermove',e=>{
+  if(activePointer===e.pointerId){e.preventDefault();moveDrag(e.clientX,e.clientY,e.pointerId);}
+},{passive:false});
+document.addEventListener('pointerup',e=>stopDrag(e.pointerId));
+document.addEventListener('pointercancel',e=>stopDrag(e.pointerId));
+document.addEventListener('touchstart',e=>{
+  if(mode!=='play'||activePointer!==null||isControl(e))return;
+  const q=e.changedTouches&&e.changedTouches[0];if(!q)return;
+  e.preventDefault();startDrag(q.clientX,q.clientY,'touch-'+q.identifier);
+},{passive:false});
+document.addEventListener('touchmove',e=>{
+  if(typeof activePointer!=='string'||!activePointer.startsWith('touch-'))return;
+  const id=Number(activePointer.slice(6));
+  for(const q of e.changedTouches){if(q.identifier===id){e.preventDefault();moveDrag(q.clientX,q.clientY,activePointer);break;}}
+},{passive:false});
+function stopTouch(e){
+  if(typeof activePointer!=='string'||!activePointer.startsWith('touch-'))return;
+  const id=Number(activePointer.slice(6));
+  for(const q of e.changedTouches){if(q.identifier===id){stopDrag(activePointer);break;}}
+  }
+  document.addEventListener('touchend',stopTouch,{passive:true});
+document.addEventListener('touchcancel',stopTouch,{passive:true});
+function chooseUpgrade(){mode='upgrade';$('upgrade').classList.remove('hidden');let box=$('choices');box.innerHTML='';let list=[...upgrades].sort(()=>Math.random()-.5).slice(0,3);list.forEach(u=>{let b=document.createElement('button');b.className='pick';b.innerHTML=`${u.icon} ${u.name}<small>${u.desc}</small>`;b.onclick=()=>{u.apply();mode='play';$('upgrade').classList.add('hidden');updateHUD();last=performance.now();requestAnimationFrame(loop)};box.appendChild(b)})}
+function end(){mode='over';$('leaveConfirm').classList.add('hidden');$('pauseOverlay').classList.add('hidden');checkAchievements();let reward=Math.floor(t);lobbyCoins+=reward;saveCosmetics();best=Math.max(best,score);try{localStorage.lastLightBest=best}catch(e){}try{if(window.NRCloudSave)window.NRCloudSave(getCloudProfile())}catch(e){}$('bottom').classList.add('hidden');$('over').classList.remove('hidden');$('coins').textContent=lobbyCoins;$('bestLobby').textContent=best;$('over').querySelector('h1').textContent=leaveRequested?'ステージ離脱':'RUN OVER';$('over').querySelector('.main').textContent=leaveRequested?'ロビーへ戻る':'もう一度挑戦 ↻';$('result').innerHTML=`生存時間：<b>${Math.floor(t)}秒</b><br>🪙 生存報酬：<b>+${reward}コイン</b><br>回収した経験値：<b>${score}</b><br>到達レベル：<b>${lv}</b><br>ベストスコア：<b>${best}</b>`}
+function update(dt){t+=dt;wave=1+Math.floor(t/25);checkAchievements();if(t>150&&Math.floor(t)%30===0&&Math.floor((t-dt))%30!==0)$('help').innerHTML='⚠️ 脅威レベル上昇！敵が硬く速くなる<br>WAVE '+wave+' — 動き続けて生き残れ！';if(t>=nextBossAt&&!boss){bossSpawned=true;bossCount++;sfx('boss');let bhp=(120+wave*22)*Math.min(6,1+bossCount*.38)*(chaos?1.25:1);boss={x:W/2,y:-45,r:31+Math.min(12,bossCount*2),hp:bhp,maxhp:bhp,speed:24+wave*1.4+bossCount*3,fire:Math.max(.8,2.2-bossCount*.12)};$('help').innerHTML='👹 BOSS '+bossCount+' 出現！前より強い！<br>WAVE '+wave+' — 攻撃を避けながら撃破しよう';nextBossAt=t+90;} p.dashReady=Math.max(0,p.dashReady-dt);p.inv=Math.max(0,p.inv-dt);
+ let dx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0),dy=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0);if(touch){dx=touch.x;dy=touch.y}let l=Math.hypot(dx,dy)||1;if(dx||dy){p.x+=dx/l*p.speed*dt;p.y+=dy/l*p.speed*dt}p.x=Math.max(p.r,Math.min(W-p.r,p.x));p.y=Math.max(70,Math.min(H-p.r,p.y));
+ spawn-=dt;if(spawn<=0){spawnEnemy();spawn=Math.max(chaos?.12:.18,(chaos?.66:.88)-t*(chaos?.006:.004))}gemSpawn-=dt;if(gemSpawn<=0){spawnGem();gemSpawn=Math.max(.22,.7-t*.002)*(1-p.luck)}
+ for(let i=gems.length-1;i>=0;i--){let g=gems[i],d=Math.hypot(p.x-g.x,p.y-g.y);if(d<p.magnet){let a=Math.atan2(p.y-g.y,p.x-g.x),v=65+(1-d/p.magnet)*300;g.x+=Math.cos(a)*v*dt;g.y+=Math.sin(a)*v*dt}if(d<p.r+g.r+4){score+=p.gemValue*(chaos?2:1);xp++;particles(g.x,g.y,'#ffe66d',6);gems.splice(i,1);if(xp>=need){xp-=need;lv++;sfx('level');need+=Math.ceil(lv*.7)+2;chooseUpgrade();updateHUD();return}}}
+ if(boss){let ba=Math.atan2(p.y-boss.y,p.x-boss.x);boss.x+=Math.cos(ba)*boss.speed*dt;boss.y+=Math.sin(ba)*boss.speed*dt;boss.fire-=dt;if(boss.fire<=0){boss.fire=2.2;let a=Math.atan2(p.y-boss.y,p.x-boss.x);shots.push({x:boss.x,y:boss.y,vx:Math.cos(a)*210,vy:Math.sin(a)*210,r:7,damage:1,life:2,enemyShot:true});}if(Math.hypot(p.x-boss.x,p.y-boss.y)<p.r+boss.r&&p.inv<=0){p.hp--;p.inv=1.15;if(p.hp<=0){updateHUD();end();return}}}
+ p.fireTimer-=dt;if(p.fireTimer<=0){p.fireTimer=p.fireRate;let targets=foes.filter(e=>Math.hypot(e.x-p.x,e.y-p.y)<=p.range);if(boss&&Math.hypot(boss.x-p.x,boss.y-p.y)<=p.range)targets.push(boss);targets.sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));targets=targets.slice(0,p.multishot);for(let e of targets){let a=Math.atan2(e.y-p.y,e.x-p.x);if(performance.now()-lastShotSfx>130){sfx('shot');lastShotSfx=performance.now()}shots.push({x:p.x,y:p.y,vx:Math.cos(a)*430,vy:Math.sin(a)*430,r:4,damage:p.damage,life:.9})}}
+ // 特殊武器の自動攻撃
+ if(p.weapons.boomerang){let lvl=p.weapons.boomerang;p.weaponTimers.boomerang=(p.weaponTimers.boomerang||0)-dt;if(p.weaponTimers.boomerang<=0){p.weaponTimers.boomerang=Math.max(.42,1.25-lvl*.11);let target=foes.slice().sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];let a=target?Math.atan2(target.y-p.y,target.x-p.x):t;p.boomerangs.push({x:p.x,y:p.y,vx:Math.cos(a)*360,vy:Math.sin(a)*360,phase:0,life:2.4,hitCooldown:{},r:9,damage:4+lvl*2.2})}for(let b of p.boomerangs){b.life-=dt;if(b.phase===0){b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(b.x-p.x,b.y-p.y)>Math.min(230,110+lvl*22)||b.x<10||b.x>W-10||b.y<75||b.y>H-10)b.phase=1}else{let a=Math.atan2(p.y-b.y,p.x-b.x);b.vx=Math.cos(a)*430;b.vy=Math.sin(a)*430;b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(b.x-p.x,b.y-p.y)<22)b.life=0}for(let e of foes){let key=foes.indexOf(e);b.hitCooldown[key]=(b.hitCooldown[key]||0)-dt;if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r&&b.hitCooldown[key]<=0){e.hp-=b.damage;b.hitCooldown[key]=.24;particles(e.x,e.y,'#ffcf62',3)}}}p.boomerangs=p.boomerangs.filter(b=>b.life>0)}
+ if(p.weapons.drone){let lvl=p.weapons.drone;p.weaponTimers.drone=(p.weaponTimers.drone||0)-dt;if(p.weaponTimers.drone<=0){p.weaponTimers.drone=Math.max(.16,.85-lvl*.11);let target=foes.concat(boss?[boss]:[]).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];if(target){let a=Math.atan2(target.y-p.y,target.x-p.x);shots.push({x:p.x+Math.cos(t*2)*22,y:p.y+Math.sin(t*2)*22,vx:Math.cos(a)*520,vy:Math.sin(a)*520,r:5,damage:1.5+lvl*1.5,life:1.2,drone:true});if(p.evolvedWeapons.drone)shots.push({x:p.x-Math.cos(t*2)*22,y:p.y-Math.sin(t*2)*22,vx:Math.cos(a+.16)*520,vy:Math.sin(a+.16)*520,r:5,damage:1.5+lvl*1.5,life:1.2,drone:true})}}}
+ if(p.weapons.lightning){let lvl=p.weapons.lightning;p.weaponTimers.lightning=(p.weaponTimers.lightning||0)-dt;if(p.weaponTimers.lightning<=0){p.weaponTimers.lightning=Math.max(.5,1.8-lvl*.22);let targets=foes.slice().sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,Math.min(1+lvl+(p.evolvedWeapons.lightning?2:0),7));if(boss&&Math.hypot(boss.x-p.x,boss.y-p.y)<p.range*1.4)targets.unshift(boss);targets.forEach(e=>{e.hp-=6+lvl*5;particles(e.x,e.y,'#75eaff',10)});fx.push({x:p.x,y:p.y,vx:0,vy:0,life:.18,color:'#75eaff',r:24+lvl*10})}}
+ if(p.weapons.flame){let lvl=p.weapons.flame,rad=48+lvl*13+(p.evolvedWeapons.flame?32:0);for(let e of foes){if(Math.hypot(e.x-p.x,e.y-p.y)<rad){e.hp-=dt*(5+lvl*3)}}if(boss&&Math.hypot(boss.x-p.x,boss.y-p.y)<rad+boss.r)boss.hp-=dt*(6+lvl*3)}
+ if(p.weapons.blades){let lvl=p.weapons.blades,n=Math.min(10,1+lvl+(p.evolvedWeapons.blades?3:0));for(let q=0;q<n;q++){let a=-t*(2.7+lvl*.15)+q*Math.PI*2/n,bx=p.x+Math.cos(a)*(48+lvl*5),by=p.y+Math.sin(a)*(48+lvl*5);for(let e of foes){if(Math.hypot(e.x-bx,e.y-by)<e.r+8){let key='s'+q+'_'+foes.indexOf(e);p.weaponHits[key]=(p.weaponHits[key]||0)-dt;if(p.weaponHits[key]<=0){e.hp-=2+lvl*1.5;p.weaponHits[key]=.25}}}}}
+ if(p.weapons.missile){let lvl=p.weapons.missile;p.weaponTimers.missile=(p.weaponTimers.missile||0)-dt;if(p.weaponTimers.missile<=0){p.weaponTimers.missile=Math.max(.6,2.4-lvl*.28);let target=foes.slice().sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];if(target){let a=Math.atan2(target.y-p.y,target.x-p.x);shots.push({x:p.x,y:p.y,vx:Math.cos(a)*260,vy:Math.sin(a)*260,r:8,damage:12+lvl*7+(p.evolvedWeapons.missile?22:0),life:1.5,missile:true})}}}
+  for(let i=shots.length-1;i>=0;i--){let b=shots[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;let hit=-1;for(let j=foes.length-1;j>=0;j--){let e=foes[j];if(!b.enemyShot&&Math.hypot(b.x-e.x,b.y-e.y)<b.r+e.r){hit=j;break}}if(b.enemyShot&&Math.hypot(b.x-p.x,b.y-p.y)<b.r+p.r&&p.inv<=0){p.hp--;p.inv=1.1;shots.splice(i,1);if(p.hp<=0){end();return}continue}if(boss&&!b.enemyShot&&Math.hypot(b.x-boss.x,b.y-boss.y)<b.r+boss.r){boss.hp-=b.damage;particles(b.x,b.y,'#ffcf62',5);shots.splice(i,1);if(boss.hp<=0){sfx('level');score+=100;achievements.boss=true;boss=null;checkAchievements();particles(W/2,H/2,'#ffcf62',55);$('help').innerHTML='🏆 ボス撃破！次のボスはさらに強い！';}continue}if(hit>=0){let e=foes[hit];e.hp-=b.damage;if(b.missile){for(let other of foes){if(other!==e&&Math.hypot(other.x-e.x,other.y-e.y)<58)other.hp-=b.damage*.7}particles(e.x,e.y,'#ff9b54',24)}particles(b.x,b.y,'#70f8ff',4);shots.splice(i,1);if(e.hp<=0){kills++;sfx('kill');checkAchievements();score+=e.kind==='brute'?8:e.kind==='tank'?6:e.kind==='splitter'?5:(e.kind==='fast'||e.kind==='runner')?2:4;particles(e.x,e.y,'#ff6c9c',12);if(Math.random()<.78)gems.push({x:e.x,y:e.y,r:6,phase:rand(0,6)});foes.splice(hit,1);if(e.kind==='splitter'){for(let q=0;q<2;q++)foes.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),r:7,speed:83,kind:'fast',phase:rand(0,7),hp:1,maxhp:1})}}continue}if(b.life<=0||b.x<0||b.x>W||b.y<0||b.y>H)shots.splice(i,1)}
+ for(let i=foes.length-1;i>=0;i--){let e=foes[i],a=Math.atan2(p.y-e.y,p.x-e.x);if(e.kind==='zigzag')a+=Math.sin(t*5+e.phase)*.8;if(e.kind==='splitter')a+=Math.sin(t*2+e.phase)*.18;e.x+=Math.cos(a)*e.speed*dt;e.y+=Math.sin(a)*e.speed*dt;if(Math.hypot(p.x-e.x,p.y-e.y)<p.r+e.r&&p.inv<=0){p.hp-=e.contactDamage||1;p.inv=Math.max(.72,1.15-t*.0007);sfx('hit');particles(p.x,p.y,'#ff5799',18);if(p.hp<=0){updateHUD();end();return}}}
+ for(let i=foes.length-1;i>=0;i--){if(foes[i].hp<=0){let e=foes[i];kills++;score+=4;checkAchievements();if(Math.random()<.78)gems.push({x:e.x,y:e.y,r:6,phase:rand(0,6)});particles(e.x,e.y,'#ff6c9c',10);foes.splice(i,1)}}
+ if(boss&&boss.hp<=0){score+=100;achievements.boss=true;boss=null;checkAchievements();particles(W/2,H/2,'#ffcf62',45);$('help').innerHTML='🏆 特殊武器でボス撃破！'}
+ for(let i=fx.length-1;i>=0;i--){let f=fx[i];f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=.96;f.vy*=.96;f.life-=dt;if(f.life<=0)fx.splice(i,1)}updateHUD()}
+function draw(){ctx.clearRect(0,0,W,H);let palettes=[['#15264b','#050815','#26385a77'],['#16433d','#041411','#2f8f7777'],['#44234d','#100718','#9b58b777']];let pal=palettes[stage||0];let bg=ctx.createRadialGradient(W*.5,H*.45,10,W*.5,H*.5,Math.max(W,H)*.7);bg.addColorStop(0,pal[0]);bg.addColorStop(1,pal[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle=pal[2];ctx.lineWidth=1;let off=(t*17)%40;for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=off;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+ if((stage||0)===1){ctx.strokeStyle='#7bffe033';for(let i=0;i<9;i++){ctx.beginPath();ctx.arc(W*.5,H*.5,35+i*36,0,Math.PI*2);ctx.stroke()}}else if((stage||0)===2){ctx.fillStyle='#e5a5ff18';for(let i=0;i<18;i++){let x=(i*97)%W,y=(i*67)%H;ctx.beginPath();ctx.moveTo(x,y-12);ctx.lineTo(x+8,y+8);ctx.lineTo(x-8,y+8);ctx.closePath();ctx.fill()}}
+ for(let i=0;i<60;i++){let x=(i*137)%W,y=(i*83+t*9)%H;ctx.fillStyle=(stage||0)===1?'#7bffe055':(stage||0)===2?'#e8a7ff55':'#93b6ff55';ctx.fillRect(x,y,2,2)}
+ for(let g of gems){let r=g.r*(1+.12*Math.sin(t*5+g.phase));ctx.save();ctx.translate(g.x,g.y);ctx.rotate(t*.7+g.phase);ctx.shadowBlur=14;ctx.shadowColor='#ffe66d';let gr=ctx.createLinearGradient(-r,-r,r,r);gr.addColorStop(0,'#fffde0');gr.addColorStop(.45,'#ffe66d');gr.addColorStop(1,'#e68c28');ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(0,-r*1.35);ctx.lineTo(r*.78,-r*.25);ctx.lineTo(r*.52,r*.9);ctx.lineTo(-r*.52,r*.9);ctx.lineTo(-r*.78,-r*.25);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#fff9bd';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#ffffffaa';ctx.beginPath();ctx.moveTo(-r*.35,-r*.2);ctx.lineTo(0,-r*.95);ctx.lineTo(r*.05,-r*.15);ctx.closePath();ctx.fill();ctx.restore()}
+ for(let b of shots){ctx.save();let a=Math.atan2(b.vy,b.vx);ctx.translate(b.x,b.y);ctx.rotate(a);if(b.enemyShot){ctx.shadowBlur=10;ctx.shadowColor='#ff4f83';ctx.fillStyle='#ff7d9e';ctx.beginPath();ctx.moveTo(b.r*1.5,0);ctx.lineTo(-b.r*.8,-b.r*.65);ctx.lineTo(-b.r*.45,0);ctx.lineTo(-b.r*.8,b.r*.65);ctx.closePath();ctx.fill()}else if(b.missile){ctx.shadowBlur=12;ctx.shadowColor='#ff8c4b';ctx.fillStyle='#ffbd78';ctx.beginPath();ctx.moveTo(b.r*1.8,0);ctx.lineTo(b.r*.35,-b.r*.55);ctx.lineTo(-b.r,-b.r*.42);ctx.lineTo(-b.r*.65,0);ctx.lineTo(-b.r,b.r*.42);ctx.lineTo(b.r*.35,b.r*.55);ctx.closePath();ctx.fill();ctx.fillStyle='#ff633c';ctx.fillRect(-b.r*1.8,-b.r*.22,b.r*.8,b.r*.44)}else{ctx.shadowBlur=10;ctx.shadowColor=b.drone?'#a8a5ff':'#6fffff';ctx.fillStyle=b.drone?'#d5caff':'#b8ffff';ctx.beginPath();ctx.ellipse(0,0,b.r*1.45,b.r*.68,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(b.r*.35,-b.r*.12,Math.max(1,b.r*.24),0,Math.PI*2);ctx.fill()}ctx.restore()}
+ if(boss){ctx.save();ctx.translate(boss.x,boss.y);ctx.rotate(Math.sin(t*1.8)*.07);ctx.shadowBlur=25;ctx.shadowColor='#ff6a87';let bg=ctx.createRadialGradient(-boss.r*.3,-boss.r*.35,2,0,0,boss.r*1.2);bg.addColorStop(0,'#ffe7a0');bg.addColorStop(.32,'#ff9b55');bg.addColorStop(1,'#a52d68');ctx.fillStyle=bg;ctx.beginPath();for(let i=0;i<12;i++){let a=i*Math.PI/6-Math.PI/2,r=boss.r*(i%2?.83:1.08);i?ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r):ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r)}ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#ffd2d9';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#4b123e';ctx.beginPath();ctx.moveTo(-boss.r*.72,-boss.r*.52);ctx.lineTo(-boss.r*.35,-boss.r*1.1);ctx.lineTo(-boss.r*.12,-boss.r*.45);ctx.moveTo(boss.r*.72,-boss.r*.52);ctx.lineTo(boss.r*.35,-boss.r*1.1);ctx.lineTo(boss.r*.12,-boss.r*.45);ctx.fill();ctx.fillStyle='#32112f';ctx.beginPath();ctx.ellipse(-boss.r*.32,-boss.r*.08,boss.r*.15,boss.r*.22,-.25,0,Math.PI*2);ctx.ellipse(boss.r*.32,-boss.r*.08,boss.r*.15,boss.r*.22,.25,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff07a';ctx.beginPath();ctx.arc(-boss.r*.3,-boss.r*.1,boss.r*.055,0,Math.PI*2);ctx.arc(boss.r*.3,-boss.r*.1,boss.r*.055,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#50133a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-boss.r*.23,boss.r*.35);ctx.lineTo(0,boss.r*.48);ctx.lineTo(boss.r*.23,boss.r*.35);ctx.stroke();ctx.restore();ctx.fillStyle='#321b2a';ctx.fillRect(boss.x-40,boss.y-boss.r-15,80,6);ctx.fillStyle='#ff597b';ctx.fillRect(boss.x-40,boss.y-boss.r-15,80*Math.max(0,boss.hp/boss.maxhp),6);ctx.strokeStyle='#ffe2eb';ctx.strokeRect(boss.x-40,boss.y-boss.r-15,80,6);ctx.fillStyle='#fff';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('BOSS',boss.x,boss.y-boss.r-21)}
+ for(let e of foes){let colors={normal:'#ff456e',fast:'#ff5ac8',runner:'#fff16a',tank:'#ff8a55',splitter:'#6effa5',zigzag:'#65d9ff',brute:'#b58aff'};let col=colors[e.kind]||'#ff456e';ctx.save();ctx.translate(e.x,e.y);let pulse=1+.025*Math.sin(t*4+e.phase);ctx.scale(pulse,pulse);ctx.fillStyle=col;ctx.globalAlpha=.92;ctx.beginPath();if(e.kind==='tank'||e.kind==='brute'){let rr=e.r;ctx.roundRect(-rr,-rr,rr*2,rr*2,Math.max(3,rr*.28))}else if(e.kind==='fast'||e.kind==='runner'){ctx.moveTo(e.r,0);ctx.lineTo(-e.r*.75,-e.r*.7);ctx.lineTo(-e.r*.45,0);ctx.lineTo(-e.r*.75,e.r*.7);ctx.closePath()}else if(e.kind==='zigzag'){ctx.moveTo(0,-e.r);ctx.lineTo(e.r,e.r*.8);ctx.lineTo(-e.r,e.r*.8);ctx.closePath()}else{ctx.arc(0,0,e.r,0,Math.PI*2)}ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='#ffffffaa';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#29152d';ctx.beginPath();ctx.arc(-e.r*.3,-e.r*.08,Math.max(1.5,e.r*.13),0,Math.PI*2);ctx.arc(e.r*.3,-e.r*.08,Math.max(1.5,e.r*.13),0,Math.PI*2);ctx.fill();ctx.restore();if(e.hp<e.maxhp){ctx.fillStyle='#341b32';ctx.fillRect(e.x-e.r,e.y-e.r-7,e.r*2,3);ctx.fillStyle='#7dffad';ctx.fillRect(e.x-e.r,e.y-e.r-7,e.r*2*Math.max(0,e.hp/e.maxhp),3)}}
+ for(let f of fx){ctx.globalAlpha=Math.max(0,f.life/.6);ctx.fillStyle=f.color;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,7);ctx.fill()}ctx.globalAlpha=1;
+ if(p){if(p.boomerangs){for(let b of p.boomerangs){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(t*12*(b.phase?-1:1));ctx.fillStyle=p.evolvedWeapons.boomerang?'#ff75ec':'#ffcf62';ctx.shadowBlur=16;ctx.shadowColor=ctx.fillStyle;ctx.beginPath();ctx.moveTo(-10,-7);ctx.lineTo(10,0);ctx.lineTo(-10,7);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.restore()}}if(p.weapons.blades){let n=Math.min(8,1+p.weapons.blades);for(let q=0;q<n;q++){let a=-t*(2.7+p.weapons.blades*.15)+q*Math.PI*2/n;ctx.save();ctx.translate(p.x+Math.cos(a)*(48+p.weapons.blades*5),p.y+Math.sin(a)*(48+p.weapons.blades*5));ctx.rotate(a);ctx.fillStyle=p.evolvedWeapons.blades?'#ff75ec':'#9afcff';ctx.shadowBlur=12;ctx.shadowColor=p.evolvedWeapons.blades?'#ff75ec':'#65fff5';ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(7,7);ctx.lineTo(-7,7);ctx.closePath();ctx.fill();ctx.restore()}}if(p.weapons.flame){ctx.strokeStyle='#ff874e99';ctx.lineWidth=4+p.weapons.flame;ctx.beginPath();ctx.arc(p.x,p.y,48+p.weapons.flame*13,0,Math.PI*2);ctx.stroke()}}
+ if(p){let sk=skinById(equippedSkin);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(t*1.6);ctx.shadowBlur=25;ctx.shadowColor=sk.color;ctx.strokeStyle=p.inv>0?'#fff':sk.color;ctx.fillStyle=sk.color;ctx.lineWidth=3;ctx.beginPath();if(sk.shape==='circle'){ctx.arc(0,0,14,0,Math.PI*2)}else if(sk.shape==='hex'){for(let i=0;i<6;i++){let a=i*Math.PI/3-Math.PI/2,x=Math.cos(a)*16,y=Math.sin(a)*16;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath()}else if(sk.shape==='star'){for(let i=0;i<10;i++){let a=i*Math.PI/5-Math.PI/2,r=i%2?7:17,x=Math.cos(a)*r,y=Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath()}else if(sk.shape==='triangle'){ctx.moveTo(0,-18);ctx.lineTo(16,13);ctx.lineTo(-16,13);ctx.closePath()}else{ctx.moveTo(0,-17);ctx.lineTo(13,0);ctx.lineTo(0,17);ctx.lineTo(-13,0);ctx.closePath()}ctx.stroke();ctx.globalAlpha=.35;ctx.fill();ctx.globalAlpha=1;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(0,0,4,0,7);ctx.fill();ctx.restore()}
+ if(touchStart&&touchNow){ctx.strokeStyle='#61fff5aa';ctx.lineWidth=2;ctx.beginPath();ctx.arc(touchStart.x,touchStart.y,30,0,7);ctx.stroke();ctx.beginPath();ctx.arc(touchNow.x,touchNow.y,12,0,7);ctx.stroke()}
+}
+function loop(now){if(mode!=='play')return;let dt=Math.min(.032,(now-last)/1000||.016);last=now;update(dt);draw();if(mode==='play')requestAnimationFrame(loop)}
+function idle(){if(mode==='title'){t+=.016;draw();requestAnimationFrame(idle)}}idle();
+})();
+</script>
+
+</body></html>
