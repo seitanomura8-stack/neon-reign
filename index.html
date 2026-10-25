@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>NEON REIGN</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b16;color:#f1f7ff;font-family:system-ui,-apple-system,sans-serif;touch-action:none}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;z-index:0}
+#hud{position:fixed;z-index:2;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:7px;pointer-events:none;flex-wrap:wrap}
+.stat{background:#091327dc;border:1px solid #34496f;border-radius:12px;padding:7px 10px;font-size:13px;font-weight:800;box-shadow:0 5px 20px #0005}
+#xpbar{position:fixed;z-index:2;top:62px;left:10px;right:10px;height:7px;border-radius:9px;background:#1b2945;overflow:hidden}
+#xpfill{height:100%;width:0;background:linear-gradient(90deg,#6cfff0,#65a7ff);box-shadow:0 0 12px #58f6ff}
+#bottom{position:fixed;z-index:3;bottom:12px;left:12px;right:12px;display:flex;align-items:end;justify-content:space-between;pointer-events:none}
+#help{font-size:12px;line-height:1.45;color:#d3def4;background:#091327c9;border:1px solid #2e4266;border-radius:12px;padding:8px 10px}
+#dash{pointer-events:auto;position:fixed;right:18px;bottom:18px;z-index:5;width:82px;height:82px;flex-shrink:0;border-radius:50%;border:2px solid #61f8ff;color:#fff;background:#163b67dd;font-weight:900;box-shadow:0 0 22px #43d9ff55;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}#dash small{font-size:11px;font-weight:700}#dash.ready{background:linear-gradient(145deg,#146b78,#183b68);box-shadow:0 0 24px #43d9ff99}#soundToggle{pointer-events:auto;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:5;align-self:auto;border:1px solid #48658d;background:#091327ee;color:#fff;border-radius:12px;padding:9px 12px;font-weight:800;white-space:nowrap;box-shadow:0 2px 12px #0008}#bottom{gap:8px;flex-wrap:wrap}#bottom #help{max-width:calc(100% - 300px);padding-bottom:8px}#pauseGame{pointer-events:auto;position:fixed;left:12px;top:78px;z-index:10;border:1px solid #5277a8;background:#12223df2;color:#e5f2ff;border-radius:12px;padding:10px 12px;font-weight:900;white-space:nowrap;box-shadow:0 2px 12px #0008}
+.overlay{position:fixed;z-index:10;inset:0;background:#030611d9;display:flex;align-items:center;justify-content:center;padding:16px}
+.panel{width:min(490px,100%);max-height:90dvh;overflow:auto;background:linear-gradient(145deg,#142445,#080e20);border:1px solid #45618d;border-radius:23px;padding:22px;box-shadow:0 0 55px #1a4b8855;text-align:center}
+h1{font-size:clamp(30px,8vw,48px);line-height:1;margin:6px 0 12px;color:#71fff4;text-shadow:0 0 20px #2ab9d8;letter-spacing:1px}
+p{color:#c5d4ef;line-height:1.55}.main{border:0;border-radius:13px;background:linear-gradient(90deg,#64f6ef,#a0ffb4);color:#071321;font-size:17px;font-weight:950;padding:13px 24px;margin-top:10px;box-shadow:0 5px 0 #2c8c91}
+.cards{display:grid;grid-template-columns:1fr;gap:9px;margin-top:15px}.pick{border:1px solid #42638e;background:#102244;color:#f4f8ff;text-align:left;padding:12px;border-radius:13px;font-weight:850;font-size:15px}.pick small{display:block;color:#b8cae9;font-weight:500;margin-top:4px;line-height:1.35}
+.gachaGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.skin{border:1px solid #42638e;background:#102244;color:#f4f8ff;padding:10px 5px;border-radius:12px;font-weight:800}.skin small{display:block;color:#b8cae9;font-size:11px;margin-top:5px}.hidden{display:none!important}
+body.font-small{font-size:85%}body.font-medium{font-size:100%}body.font-large{font-size:125%}body.font-large .stat{font-size:17px}body.font-large #help{font-size:16px}body.font-large .pick{font-size:19px}body.font-large .pick small{font-size:15px}body.font-large .skin{font-size:17px}body.font-large .skin small{font-size:14px}body.font-small .stat{font-size:11px}body.font-small #help{font-size:10px}body.font-small .pick{font-size:13px}body.font-small .pick small{font-size:10px}#fontPreview{border:1px solid #45618d;border-radius:12px;padding:14px;background:#091327}#settings .cards{grid-template-columns:1fr}
+body{--ui-scale:1}body.font-small{--ui-scale:.88}body.font-medium{--ui-scale:1}body.font-large{--ui-scale:1.22}body.font-xlarge{--ui-scale:1.45}#hud .stat,#help,#soundToggle,#dash,#dash small,.pick,.skin,.main,.panel p,.panel h3,.panel button{font-size:calc(1em * var(--ui-scale))}#hud .stat{font-size:calc(13px * var(--ui-scale))}#help{font-size:calc(12px * var(--ui-scale))}#soundToggle{font-size:calc(14px * var(--ui-scale));padding:calc(9px * var(--ui-scale))}#dash{width:calc(82px * var(--ui-scale));height:calc(82px * var(--ui-scale))}#dash small{font-size:calc(11px * var(--ui-scale))}.panel{padding:calc(22px * var(--ui-scale))}.pick{font-size:calc(15px * var(--ui-scale))}.main{font-size:calc(17px * var(--ui-scale))} 
+
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud" class="hidden">
+ <div class="stat">⏱ <span id="timer">00:00</span></div>
+ <div class="stat">💠 <span id="score">0</span></div>
+ <div class="stat">❤️ <span id="hp">3</span>　⭐ Lv.<span id="lv">1</span></div>
+ <div class="stat">🌊 WAVE <span id="wave">1</span></div>
+</div><div id="xpbar" class="hidden"><div id="xpfill"></div></div>
+<div id="bottom" class="hidden"><div id="help">WASD / 矢印キーで移動<br>自動攻撃・SpaceでDASH・P/Escで停止</div><button id="soundToggle" aria-label="効果音切り替え">🔇 音OFF（タップでON）</button><button id="pauseGame">⏸ 一時停止</button><button id="dash">⚡ DASH<small id="dashStatus">READY!</small></button></div>
+<div id="title" class="overlay"><div class="panel"><div style="font-size:48px">🌌</div><h1 style="letter-spacing:3px;text-shadow:0 0 18px #57f7ff">NEON REIGN</h1><h3 style="margin-top:0;color:#ffdc73">SURVIVE • EVOLVE • CONQUER</h3><p>敵を倒して経験値を集めよう！<br>迫りくる敵を撃退し、強化を選んで生き延びろ！</p><p>🟢 経験値を集める　⚡ ダッシュで突破<br>🧲 強化で磁力・速度・回復などを獲得</p><p style="font-size:12px">PC：WASD / 矢印キーで移動・SpaceでDASH・P/Escで一時停止<br>スマホ：画面の空いている場所を押したままドラッグ</p><button class="main" id="start">ロビーへ ▶</button></div></div>
+<div id="lobby" class="overlay hidden"><div class="panel">
+ <div style="font-size:40px">🛰️</div><h1 style="font-size:38px">SURVIVOR LOBBY</h1>
+ <p class="sub">準備を整えてから出撃しよう。</p>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;text-align:left;margin-top:14px">
+  <div class="stat">🪙 永続コイン<br><span id="coins">0</span></div>
+  <div class="stat">🏆 ベスト記録<br><span id="bestLobby">0</span> pts</div>
+ </div>
+ <h3 style="text-align:left;margin-bottom:6px">出撃ボーナス</h3>
+ <div class="cards" id="loadouts">
+  <button class="pick" data-loadout="balanced">⚖️ バランス型 <small>標準状態で出撃</small></button>
+  <button class="pick" data-loadout="runner">👟 ランナー型 <small>移動速度 +18%、磁力が少し弱い</small></button>
+  <button class="pick" data-loadout="magnet">🧲 磁力型 <small>経験値の吸引範囲 +55</small></button>
+ </div>
+ <h3 style="text-align:left;margin-bottom:6px">ゲームモード</h3>
+ <div class="cards">
+  <button class="pick" id="normalMode">🌌 SURVIVAL <small>標準ルール・敵を倒して生き延びる</small></button>
+  <button class="pick" id="hardMode">🔥 CHAOS <small>敵は多め・スコア倍率 ×2</small></button>
+ </div>
+ <button class="main" id="launch">出撃開始 ▶</button>
+ <button class="pick" id="openGacha" style="text-align:center;margin-top:12px">🎰 見た目ガチャへ</button><button class="pick" id="openShop" style="text-align:center">🏪 コインショップ</button><button class="pick" id="openAch" style="text-align:center">🏆 実績を見る</button><button class="pick" id="openSettings" style="text-align:center">⚙️ 設定（文字サイズ）</button><button class="pick" id="openReset" style="text-align:center;border-color:#a64a62;color:#ffb6c4">🗑️ セーブデータをリセット</button>
+ <div><button id="backTitle" style="margin-top:14px;background:none;color:#b8c9e8;border:0;padding:8px">← タイトルへ戻る</button></div>
+ </div></div>
+<div id="gacha" class="overlay hidden"><div class="panel">
+ <div style="font-size:40px">🎰</div><h1 style="font-size:36px">COSMETIC GACHA</h1>
+ <p>能力は変わらない、見た目だけのガチャ！<br>🪙 所持コイン：<b id="gachaCoins">0</b></p>
+ <div class="gachaGrid"><button class="skin" id="pull1">1回引く<small>🪙 100コイン</small></button><button class="skin" id="pull5">5連ガチャ<small>🪙 450コイン</small></button><button class="skin" id="pull10">10連ガチャ<small>🪙 800コイン</small></button></div>
+ <p id="gachaMessage" style="font-size:13px;white-space:pre-line"></p><h3>🎨 所持スキン（選ぶと見た目変更）</h3><div class="cards" id="skinList"></div>
+ <button class="main" id="closeGacha">ロビーに戻る</button>
+ </div></div>
+<div id="shop" class="overlay hidden"><div class="panel"><div style="font-size:40px">🏪</div><h1 style="font-size:36px">COIN SHOP</h1><p>所持コイン：<b id="shopCoins">0</b><br>見た目だけのスキンを直接購入できるよ！</p><div class="cards" id="shopList"></div><button class="main" id="closeShop">ロビーに戻る</button></div></div>
+<div id="achievements" class="overlay hidden"><div class="panel"><div style="font-size:40px">🏆</div><h1 style="font-size:36px">ACHIEVEMENTS</h1><p id="achList" style="text-align:left;white-space:pre-line"></p><button class="main" id="closeAch">ロビーに戻る</button></div></div>
+
+<div id="settings" class="overlay hidden"><div class="panel"><div style="font-size:40px">⚙️</div><h1 style="font-size:36px">設定</h1><h3>文字の大きさ</h3><p>見やすい大きさを選んでね。</p><div class="cards"><button class="pick" id="fontSmall">小　Small</button><button class="pick" id="fontMedium">中　Medium（標準）</button><button class="pick" id="fontLarge">大　Large</button></div><p id="fontPreview">文字サイズの見本：敵を倒して生き延びよう！</p><button class="main" id="closeSettings">設定を保存して戻る</button></div></div>
+<div id="resetConfirm" class="overlay hidden"><div class="panel"><div style="font-size:42px">⚠️</div><h1 style="font-size:30px">データリセット</h1><p id="resetPrompt">本当にリセットしますか？</p><p style="color:#ff9eac;font-size:13px">コイン・スキン・実績・ベスト記録が消えます。この操作は元に戻せません。</p><button class="pick" id="resetNext">次へ：リセット内容を確認</button><button class="main" id="resetFinal" style="background:linear-gradient(135deg,#9d2947,#591b38);display:none">本当にリセットする</button><button class="pick" id="resetCancel">キャンセルして戻る</button></div></div>
+<div id="pauseOverlay" class="overlay hidden"><div class="panel"><div style="font-size:42px">⏸️</div><h1 style="font-size:34px">一時停止</h1><p>ひと休みしよう！ゲームは止まっているよ。</p><section style="text-align:left;background:#0a1427;border:1px solid #355071;border-radius:14px;padding:12px;margin:12px 0"><h3 style="margin:0 0 8px">⚔️ プレイ中の武器</h3><div id="pauseWeaponList" style="display:grid;gap:7px"></div></section><button class="main" id="resumeGame">▶ ゲームに戻る</button><button class="pick" id="pauseLeave">🚪 ステージを離脱する</button><p style="font-size:12px">PC：P または Esc でも再開できるよ。</p></div></div>
+<div id="leaveConfirm" class="overlay hidden"><div class="panel"><div style="font-size:42px">🚪</div><h1 style="font-size:30px">ステージ離脱</h1><p>今のステージを離脱しますか？<br>ここまでのスコアと生存報酬は記録されます。</p><button class="main" id="confirmLeave" style="background:linear-gradient(90deg,#ff9aa9,#ffd1a8)">離脱してロビーへ</button><button class="pick" id="cancelLeave">ゲームに戻る</button></div></div>
+<div id="upgrade" class="overlay hidden"><div class="panel"><h1 style="font-size:35px">LEVEL UP!</h1><p>生き残るための強化を選べ！</p><div class="cards" id="choices"></div></div></div>
+<div id="over" class="overlay hidden"><div class="panel"><div style="font-size:45px">🕯️</div><h1>RUN OVER</h1><p id="result"></p><button class="main" id="again">もう一度挑戦 ↻</button></div></div>
+<script>
+(()=>{
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let W,H,D=1;
+let soundOn=false,audioCtx=null,lastShotSfx=0;async function unlockAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;audioCtx=audioCtx||new AC();if(audioCtx.state==='suspended')await audioCtx.resume();return audioCtx.state==='running'}catch(e){return false}}function tone(freq=440,duration=.07,type='sine',volume=.07,slide=0){if(!soundOn)return;try{if(!audioCtx)return; if(audioCtx.state!=='running')return;let o=audioCtx.createOscillator(),g=audioCtx.createGain(),now=audioCtx.currentTime;o.type=type;o.frequency.setValueAtTime(freq,now);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,freq+slide),now+duration);g.gain.setValueAtTime(Math.min(.38,volume*4.0),now);g.gain.exponentialRampToValueAtTime(.001,now+duration);o.connect(g);g.connect(audioCtx.destination);o.start(now);o.stop(now+duration)}catch(e){}}
+function sfx(name){if(!soundOn)return;if(name==='dash'){tone(260,.12,'sawtooth',.11,650);tone(720,.09,'triangle',.075,220)}else if(name==='shot'){tone(640,.035,'square',.025,-180)}else if(name==='hit'){tone(210,.055,'triangle',.055,-80)}else if(name==='kill'){tone(520,.07,'sine',.045,250)}else if(name==='level'){tone(480,.12,'triangle',.085,240);setTimeout(()=>tone(720,.16,'triangle',.075,260),70)}else if(name==='boss'){tone(110,.35,'sawtooth',.10,-45);tone(165,.28,'square',.065,-50)}else if(name==='coin'){tone(850,.08,'sine',.06,350)}}
+function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
+const $=id=>document.getElementById(id);
+let fontSizeChoice='medium';try{fontSizeChoice=localStorage.getItem('llFontSize')||'medium'}catch(e){}
+function applyFontSize(size){fontSizeChoice=size;document.body.classList.remove('font-small','font-medium','font-large');document.body.classList.add('font-'+size);try{localStorage.setItem('llFontSize',size)}catch(e){};['Small','Medium','Large'].forEach(n=>{let b=$('font'+n);if(b)b.style.borderColor=(n.toLowerCase()===size)?'#71fff4':'#42638e';});}
+applyFontSize(fontSizeChoice);
+$('openSettings').onclick=()=>{$('lobby').classList.add('hidden');$('settings').classList.remove('hidden')};
+$('closeSettings').onclick=()=>{$('settings').classList.add('hidden');$('lobby').classList.remove('hidden')};
+$('fontSmall').onclick=()=>applyFontSize('small');$('fontMedium').onclick=()=>applyFontSize('medium');$('fontLarge').onclick=()=>applyFontSize('large');
+
+$('soundToggle').onclick=async()=>{if(!soundOn){const ok=await unlockAudio();soundOn=ok;$('soundToggle').textContent=soundOn?'🔊 音ON':'⚠️ 音声非対応';if(soundOn){tone(880,.12,'sine',.10,180);setTimeout(()=>tone(1175,.14,'triangle',.085,100),100)}}else{soundOn=false;$('soundToggle').textContent='🔇 音OFF（タップでON）'}};document.addEventListener('pointerdown',()=>{if(soundOn&&audioCtx&&audioCtx.state==='suspended')unlockAudio()},{passive:true});
+let mode='title',leaveRequested=false,p,foes,gems,fx,shots=[],keys={},touch=null,touchStart=null,touchNow=null,t=0,score=0,xp=0,need=5,lv=1,wave=1,spawn=0,gemSpawn=0,last=0,best=0,boss=null,bossSpawned=false,nextBossAt=60,bossCount=0,kills=0,evolutions=[],stage=0;
+try{best=+(localStorage.lastLightBest||0)}catch(e){}
+const upgrades=[
+ {icon:'👟',name:'軽量ブーツ',desc:'移動速度 +28%',apply:()=>p.speed*=1.28},
+ {icon:'🧲',name:'磁力フィールド',desc:'経験値を吸い寄せる範囲 +90%',apply:()=>p.magnet+=90},
+ {icon:'💚',name:'応急キット',desc:'HPを2回復（最大HPまで）',apply:()=>p.hp=Math.min(p.maxhp,p.hp+2)},
+ {icon:'🛡️',name:'エネルギーシールド',desc:'最大HP +2、HPも2回復',apply:()=>{p.maxhp+=2;p.hp=Math.min(p.maxhp,p.hp+2)}},
+ {icon:'⚡',name:'クイックチャージ',desc:'ダッシュ再使用時間 -35%',apply:()=>p.dashCD=Math.max(.65,p.dashCD*.65)},
+ {icon:'💠',name:'回収ボーナス',desc:'経験値オーブの獲得量 +2',apply:()=>p.gemValue+=2},
+ {icon:'🌀',name:'残像ステップ',desc:'ダッシュ中の無敵時間 +0.4秒',apply:()=>p.dashInv+=.4},
+ {icon:'🍀',name:'幸運の波動',desc:'経験値オーブの出現率が大幅アップ',apply:()=>p.luck=Math.min(.9,p.luck+.25)},
+ {icon:'🔫',name:'強化弾',desc:'攻撃ダメージ +2（3回で進化条件）',apply:()=>{p.damage+=1.5;p.damageUp=(p.damageUp||0)+1;checkEvolution()}},
+ {icon:'⚙️',name:'高速連射',desc:'攻撃間隔 -30%（3回で進化条件）',apply:()=>{p.fireRate=Math.max(.16,p.fireRate*.82);p.rateUp=(p.rateUp||0)+1;checkEvolution()}},
+ {icon:'🎯',name:'照準補助',desc:'自動攻撃の射程 +35%',apply:()=>p.range*=1.35},
+ {icon:'➕',name:'追加弾',desc:'一度に撃つ弾が1発増える（最大6発）',apply:()=>p.multishot=Math.min(6,p.multishot+1)},
+ {icon:'🪃',name:'ブーメラン',desc:'前方へ飛び、戻りながら敵を攻撃する',apply:()=>unlockWeapon('boomerang')},
+ {icon:'🤖',name:'ドローン',desc:'近くの敵へ自動射撃するドローンを獲得',apply:()=>unlockWeapon('drone')},
+ {icon:'⚡',name:'チェーンライトニング',desc:'敵から敵へ連鎖する電撃を放つ',apply:()=>unlockWeapon('lightning')},
+ {icon:'🔥',name:'火炎オーラ',desc:'近くの敵を継続的に焼く炎の輪を獲得',apply:()=>unlockWeapon('flame')},
+ {icon:'🌀',name:'旋風刃',desc:'自分の周りを回転し、近づく敵を切り裂く',apply:()=>unlockWeapon('blades')},
+ {icon:'💣',name:'ミサイルポッド',desc:'一定時間ごとに敵へ爆発ミサイルを発射',apply:()=>unlockWeapon('missile')},
+ {icon:'📡',name:'武器強化パーツ',desc:'所持している特殊武器を強化。Lv.5で専用進化！',apply:()=>upgradeWeapon()}
+];
+const weaponNames={boomerang:'ブーメラン',drone:'ドローン',lightning:'チェーンライトニング',flame:'火炎オーラ',blades:'旋風刃',missile:'ミサイルポッド'};
+const evolvedNames={boomerang:'双生ブーメラン',drone:'守護ドローン',lightning:'雷神の鎖',flame:'地獄の炎',blades:'旋風嵐',missile:'核ミサイル'};
+function evolveWeapon(id){if(p.evolvedWeapons[id])return;p.evolvedWeapons[id]=true;p.weapons[id]=6;evolutions.push(id);$('help').innerHTML='🌟 武器進化！ '+evolvedNames[id]+' が誕生！';sfx('level');particles(p.x,p.y,'#d9a2ff',48)}
+function unlockWeapon(id){if(!p.weapons[id]){p.weapons[id]=1;$('help').innerHTML='🆕 新武器獲得！ '+weaponNames[id];particles(p.x,p.y,'#ffe66d',28)}else if(p.weapons[id]<6){p.weapons[id]=Math.min(5,p.weapons[id]+1);$('help').innerHTML='⬆️ '+weaponNames[id]+' Lv.'+p.weapons[id]+'！';particles(p.x,p.y,'#65fff5',20)}if(p.weapons[id]>=5)evolveWeapon(id)}
+function upgradeWeapon(){let ids=Object.keys(p.weapons).filter(id=>p.weapons[id]<6);if(!ids.length){unlockWeapon(['boomerang','drone','lightning','flame','blades','missile'][Math.floor(Math.random()*6)]);return}let id=ids[Math.floor(Math.random()*ids.length)];unlockWeapon(id)}
+function checkEvolution(){if((p.damageUp||0)>=3&&!evolutions.includes('plasma')){evolutions.push('plasma');p.damage+=2;p.fireRate=Math.max(.16,p.fireRate*.78);$('help').innerHTML='🌟 武器進化：プラズマランチャー！攻撃力と連射が大幅アップ';particles(p.x,p.y,'#c78bff',40)}if((p.rateUp||0)>=3&&!evolutions.includes('storm')){evolutions.push('storm');p.multishot=Math.min(5,p.multishot+1);p.fireRate=Math.max(.16,p.fireRate*.78);$('help').innerHTML='🌟 武器進化：ストームショット！追加弾＋高速連射';particles(p.x,p.y,'#65fff5',40)}}
+function reset(){stage=Math.floor(Math.random()*3);boss=null;bossSpawned=false;nextBossAt=60;bossCount=0;kills=0;evolutions=[];p={x:W/2,y:H/2,r:12,hp:3,maxhp:3,speed:210,magnet:90,dashCD:3.2,dashReady:0,dashTime:0,inv:0,dashInv:.25,gemValue:1,luck:0,damage:1,fireRate:.72,fireTimer:.25,range:300,multishot:1,weapons:{},weaponTimers:{},weaponHits:{},boomerangs:[],evolvedWeapons:{}};if(loadout==='runner'){p.speed*=1.18;p.magnet*=.82}else if(loadout==='magnet'){p.magnet+=55}foes=[];gems=[];fx=[];shots=[];t=0;score=0;xp=0;need=5;lv=1;wave=1;spawn=.7;gemSpawn=.1;updateHUD()}
+function updateHUD(){if(p){let ready=p.dashReady<=0;$('dashStatus').textContent=ready?'READY!':p.dashReady.toFixed(1)+'s';$('dash').classList.toggle('ready',ready);$('dash').style.opacity=ready?'1':'.72';$('dash').style.background=ready?'linear-gradient(145deg,#146b78,#183b68)':'#18243bdd';}$('timer').textContent=`${String(Math.floor(t/60)).padStart(2,'0')}:${String(Math.floor(t%60)).padStart(2,'0')}`;$('score').textContent=score;$('hp').textContent=p.hp;$('lv').textContent=lv;$('wave').textContent=wave+(boss?' 👹':'');$('xpfill').style.width=(xp/need*100)+'%'}
+function begin(){reset();leaveRequested=false;mode='play';$('title').classList.add('hidden');$('lobby').classList.add('hidden');$('over').classList.add('hidden');$('leaveConfirm').classList.add('hidden');$('pauseOverlay').classList.add('hidden');$('upgrade').classList.add('hidden');$('hud').classList.remove('hidden');$('xpbar').classList.remove('hidden');$('bottom').classList.remove('hidden');last=performance.now();requestAnimationFrame(loop)}
+let lobbyCoins=0, loadout='balanced', chaos=false;
+const skins=[
+ {id:'default',name:'スターター',icon:'🔹',color:'#58fff4',shape:'diamond',rarity:'N'},
+ {id:'rose',name:'ローズ',icon:'💗',color:'#ff5ca8',shape:'diamond',rarity:'R'},
+ {id:'sun',name:'サンシャイン',icon:'☀️',color:'#ffd45c',shape:'circle',rarity:'R'},
+ {id:'lime',name:'ライム',icon:'🍀',col
